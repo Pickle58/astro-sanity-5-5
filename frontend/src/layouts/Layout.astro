@@ -1,0 +1,83 @@
+---
+import { VisualEditing } from "@sanity/astro/visual-editing";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description?: string;
+  image?: string;
+}
+
+const { title, description, image } = Astro.props;
+const canonicalURL = Astro.url;
+
+// Enable visual editing overlays when the env variable is set to "true"
+const visualEditingEnabled =
+  import.meta.env.PUBLIC_SANITY_VISUAL_EDITING_ENABLED === "true";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="canonical" href={canonicalURL} />
+
+    <!-- Primary meta -->
+    {description && <meta name="description" content={description} />}
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={title} />
+    {description && <meta property="og:description" content={description} />}
+    {image && <meta property="og:image" content={image} />}
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content={image ? "summary_large_image" : "summary"} />
+    <meta name="twitter:title" content={title} />
+    {description && <meta name="twitter:description" content={description} />}
+    {image && <meta name="twitter:image" content={image} />}
+
+    <!-- Google fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;700&family=Inter:wght@500;700;800&family=PT+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+      rel="stylesheet"
+    />
+
+    <title>{title}</title>
+
+  </head>
+  <body>
+    <VisualEditing enabled={visualEditingEnabled} />
+    <div class="mx-auto sm:max-w-3xl sm:px-5">
+      <header class="fixed left-0 right-0 top-0 z-10 flex border-b border-gray-200 bg-white px-1 sm:static sm:border-b-0 sm:bg-transparent sm:my-3 sm:py-2">
+        <a class="font-extrabold text-lg leading-5 pl-2 my-3 no-underline text-black sm:my-3 sm:mb-2 sm:text-2xl" href="/">Astro + Sanity</a>
+      </header>
+      <main class="mt-[45px] sm:mt-0">
+        <slot />
+      </main>
+      <footer class="flex justify-end px-3 sm:my-3">
+        <p class="text-sm leading-5 flex items-center gap-0.5">
+          Made with <svg
+            data-sanity-icon="heart-filled"
+            width="1em"
+            height="1em"
+            viewBox="0 0 25 25"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            ><path
+              d="M17 16C15.8 17.3235 12.5 20.5 12.5 20.5C12.5 20.5 9.2 17.3235 8 16C5.2 12.9118 4.5 11.7059 4.5 9.5C4.5 7.29412 6.1 5.5 8.5 5.5C10.5 5.5 11.7 6.82353 12.5 8.14706C13.3 6.82353 14.5 5.5 16.5 5.5C18.9 5.5 20.5 7.29412 20.5 9.5C20.5 11.7059 19.8 12.9118 17 16Z"
+              fill="currentColor"
+              stroke="currentColor"
+              stroke-width="1.2"></path></svg
+          > at Sanity
+        </p>
+      </footer>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,61 @@
+---
+import { createDataAttribute } from "@sanity/visual-editing-csm";
+import { formatDate } from "../utils";
+import { urlFor, buildSrcSet } from "../utils/image";
+import type { Post } from "../utils/sanity";
+
+interface Props {
+  post: Post;
+}
+
+const { post } = Astro.props;
+
+const visualEditingEnabled =
+  import.meta.env.PUBLIC_SANITY_VISUAL_EDITING_ENABLED === "true";
+
+const dataAttr = visualEditingEnabled
+  ? createDataAttribute({
+      projectId: import.meta.env.PUBLIC_SANITY_STUDIO_PROJECT_ID,
+      dataset: import.meta.env.PUBLIC_SANITY_STUDIO_DATASET,
+      baseUrl:
+        import.meta.env.PUBLIC_SANITY_STUDIO_URL || "http://localhost:3333",
+      id: post._id,
+      type: post._type,
+    })
+  : null;
+---
+
+<div class="relative flex flex-col border-b border-gray-200 p-2 first:rounded-t last:rounded-b sm:border sm:border-b-0 sm:last:border-b md:flex-row">
+  {
+    post.mainImage ? (
+      <img
+        class="h-57.75 w-full object-cover md:min-w-[366.5px] md:max-w-[366.5px] md:max-h-57.75"
+        src={urlFor(post.mainImage).width(500).height(300).fit("crop").auto("format").quality(80).url()}
+        srcset={buildSrcSet(post.mainImage, [366, 500, 732], 80)}
+        sizes="(max-width: 800px) 100vw, 366px"
+        width={500}
+        height={300}
+        loading="lazy"
+        decoding="async"
+        alt={post.mainImage.alt || ""}
+        data-sanity={dataAttr?.scope("mainImage").toString()}
+      />
+    ) : (
+      <div class="h-57.75 w-full bg-black md:min-w-[366.5px] md:max-w-[366.5px] md:max-h-57.75" />
+    )
+  }
+  <div class="mx-1 md:mx-5">
+    <h3 class="font-sans font-extrabold text-4xl leading-9 -tracking-[0.025em] my-3 sm:mt-5">
+      <a
+        class="text-black no-underline hover:opacity-80 transition-opacity duration-200 before:content-[''] before:absolute before:inset-0"
+        href={`/post/${post.slug.current}`}
+      >
+        {post.title}
+      </a>
+    </h3>
+    <p class="font-serif font-normal text-xl leading-7 mt-0">{post.excerpt}</p>
+    <p class="font-sans font-semibold text-sm mt-7">
+      {formatDate(post._createdAt)}
+    </p>
+  </div>
+</div>

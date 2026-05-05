@@ -1,0 +1,75 @@
+---
+import { PortableText } from "astro-portabletext";
+import { createDataAttribute } from "@sanity/visual-editing-csm";
+import CodeBlock from "../../components/CodeBlock.astro";
+import Layout from "../../layouts/Layout.astro";
+import { formatDate } from "../../utils";
+import { urlFor, buildSrcSet } from "../../utils/image";
+import { getPost } from "../../utils/sanity";
+
+const { slug } = Astro.params;
+const post = await getPost(slug!);
+
+if (!post) {
+  return Astro.rewrite('/404');
+}
+
+const visualEditingEnabled =
+  import.meta.env.PUBLIC_SANITY_VISUAL_EDITING_ENABLED === "true";
+
+const dataAttr = visualEditingEnabled
+  ? createDataAttribute({
+      projectId: import.meta.env.PUBLIC_SANITY_STUDIO_PROJECT_ID,
+      dataset: import.meta.env.PUBLIC_SANITY_STUDIO_DATASET,
+      baseUrl:
+        import.meta.env.PUBLIC_SANITY_STUDIO_URL || "http://localhost:3333",
+      id: post._id,
+      type: post._type,
+    })
+  : null;
+
+// SEO values: use editor-provided overrides, fall back to post fields
+const seoTitle = post.seo?.metaTitle || post.title;
+const seoDescription = post.seo?.metaDescription || post.excerpt;
+const ogImageSource = post.seo?.ogImage ?? post.mainImage;
+const ogImage = ogImageSource
+  ? urlFor(ogImageSource).width(1200).height(630).fit("crop").auto("format").quality(80).url()
+  : undefined;
+---
+
+<Layout
+  title={seoTitle ?? "Post"}
+  description={seoDescription}
+  image={ogImage}
+>
+  <section class="w-full my-1 mb-5">
+    {
+      post.mainImage ? (
+        <img
+          class="w-full h-50 object-cover md:w-187.5 md:h-95"
+          src={urlFor(post.mainImage).width(750).auto("format").quality(85).url()}
+          srcset={buildSrcSet(post.mainImage, [375, 750, 1200], 85)}
+          sizes="(max-width: 800px) 100vw, 750px"
+          width={post.mainImage.width}
+          height={post.mainImage.height}
+          loading="eager"
+          decoding="sync"
+          alt={post.mainImage.alt || ""}
+          data-sanity={dataAttr?.scope("mainImage").toString()}
+        />
+      ) : (
+        <div class="w-full h-50 bg-black md:w-187.5 md:h-95" />
+      )
+    }
+    <div class="px-3">
+      <h1 class="font-sans font-extrabold text-4xl leading-9 my-5 md:text-7xl md:leading-18 md:mt-13 md:mb-0 md:-tracking-[0.025em]">{post.title}</h1>
+      <p class="font-serif font-normal text-2xl leading-7 mt-0 md:leading-8 md:mt-3 md:mb-3" data-sanity={dataAttr?.scope("excerpt").toString()}>{post.excerpt}</p>
+      <p class="font-sans font-semibold text-sm leading-5 mt-5 md:text-lg md:leading-6 md:mt-0">
+        {formatDate(post._createdAt)}
+      </p>
+      <div class="prose prose-lg prose-serif mt-13 md:mt-21 max-w-none prose-blockquote:border-l-[5px] prose-blockquote:border-black prose-blockquote:pl-3 prose-blockquote:ml-5 prose-a:text-blue-600 prose-a:no-underline" data-sanity={dataAttr?.scope("body").toString()}>
+        <PortableText value={post.body} components={{ type: { code: CodeBlock } }} />
+      </div>
+    </div>
+  </section>
+</Layout>
