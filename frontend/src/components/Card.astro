@@ -25,11 +25,13 @@ const dataAttr = visualEditingEnabled
   : null;
 ---
 
-<div class="relative flex flex-col border-b border-gray-200 p-2 first:rounded-t last:rounded-b sm:border sm:border-b-0 sm:last:border-b md:flex-row">
+<div
+  class="relative flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg ring-1 ring-black/5 sm:rounded-2xl sm:shadow-xl md:flex-row"
+>
   {
     post.mainImage ? (
       <img
-        class="h-57.75 w-full object-cover md:min-w-[366.5px] md:max-w-[366.5px] md:max-h-57.75"
+        class="h-57.75 w-full shrink-0 object-cover rounded-t-xl sm:rounded-t-2xl md:max-h-57.75 md:min-w-[366.5px] md:max-w-[366.5px] md:rounded-t-none md:rounded-l-2xl"
         src={urlFor(post.mainImage).width(500).height(300).fit("crop").auto("format").quality(80).url()}
         srcset={buildSrcSet(post.mainImage, [366, 500, 732], 80)}
         sizes="(max-width: 800px) 100vw, 366px"
@@ -41,11 +43,13 @@ const dataAttr = visualEditingEnabled
         data-sanity={dataAttr?.scope("mainImage").toString()}
       />
     ) : (
-      <div class="h-57.75 w-full bg-black md:min-w-[366.5px] md:max-w-[366.5px] md:max-h-57.75" />
+      <div
+        class="h-57.75 w-full shrink-0 bg-black rounded-t-xl sm:rounded-t-2xl md:max-h-57.75 md:min-w-[366.5px] md:max-w-[366.5px] md:rounded-t-none md:rounded-l-2xl"
+      />
     )
   }
-  <div class="mx-1 md:mx-5">
-    <h3 class="font-sans font-extrabold text-4xl leading-9 -tracking-[0.025em] my-3 sm:mt-5">
+  <div class="flex-1 px-3 py-3 md:px-6 md:py-5">
+    <h3 class="font-sans font-extrabold text-4xl leading-9 tracking-tight my-3 sm:mt-5">
       <a
         class="text-black no-underline hover:opacity-80 transition-opacity duration-200 before:content-[''] before:absolute before:inset-0"
         href={`/post/${post.slug.current}`}

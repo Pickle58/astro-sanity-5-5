@@ -1,0 +1,49 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const skills = [
+  "TypeScript & JavaScript",
+  "HTML & semantic markup",
+  "CSS, Tailwind CSS & responsive layouts",
+  "Astro & static site architecture",
+  "React patterns & component design",
+  "REST APIs & data fetching",
+  "Git & collaborative workflows",
+  "Accessibility & performance basics",
+];
+
+const avatarSrc = "/avatar.jpg";
+const avatarAlt = "Portrait photo";
+---
+
+<Layout title="About — Pilkington Enterprises" description="About Pilkington Enterprises.">
+  <section class="mt-6 sm:mt-8">
+    <div
+      class="mx-auto grid w-full max-w-2xl grid-cols-1 gap-4 md:grid-cols-2 md:gap-5 md:items-start"
+    >
+      <!-- Grid: 1 col on small (explicit rows); 2 cols from md (skills left, image right) -->
+      <div
+        class="col-start-1 row-start-1 w-full min-w-0 rounded-xl border border-gray-200 bg-white p-4 shadow-md ring-1 ring-black/5 sm:rounded-2xl sm:p-5 sm:shadow-lg md:col-start-2 md:row-start-1 md:flex md:justify-end"
+      >
+        <img
+          src={avatarSrc}
+          alt={avatarAlt}
+          width={512}
+          height={512}
+          class="mx-auto aspect-square h-auto max-h-52 max-w-52 rounded-lg object-cover md:mx-0 md:ml-auto"
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+
+      <div
+        class="col-start-1 row-start-2 w-full min-w-0 rounded-xl border border-gray-200 bg-white p-4 shadow-md ring-1 ring-black/5 sm:rounded-2xl sm:p-5 sm:shadow-lg md:col-start-1 md:row-start-1"
+      >
+        <h2 class="m-0 mb-3 font-sans text-lg font-bold tracking-tight text-black">Skills</h2>
+        <ul class="m-0 list-disc space-y-1.5 pl-4 font-sans text-sm leading-snug text-slate-800">
+          {skills.map((skill) => <li>{skill}</li>)}
+        </ul>
+      </div>
+    </div>
+  </section>
+</Layout>

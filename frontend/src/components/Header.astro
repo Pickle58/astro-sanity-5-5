@@ -1,0 +1,167 @@
+---
+const navItems = [
+  { label: "Home", href: "/" },
+  { label: "About", href: "/about" },
+  { label: "Contact", href: "/contact" },
+];
+---
+
+<header
+  class="sticky top-0 z-20 border-b border-cyan-200/60 bg-linear-to-r from-cyan-100 via-teal-50 to-emerald-100/90 px-3 shadow-sm backdrop-blur-sm sm:mt-3 sm:rounded-lg sm:px-4"
+  data-header-root
+>
+  <div class="mx-auto flex w-full max-w-3xl items-center justify-between py-3">
+    <a
+      class="flex items-center gap-2 text-lg font-extrabold leading-5 text-black no-underline transition-transform duration-200 hover:scale-[1.01] sm:text-2xl"
+      href="/"
+    >
+      <span class="h-8 w-8 overflow-hidden rounded-sm">
+        <img
+          src="/image.png"
+          alt="Pilkington Enterprises logo"
+          class="h-full w-full scale-[1.35] object-cover object-[center_45%]"
+        />
+      </span>
+      Pilkington Enterprises
+    </a>
+
+    <button
+      type="button"
+      class="inline-flex items-center justify-center rounded-md border border-cyan-300/80 bg-white/70 p-2 text-slate-800 transition-all duration-200 hover:bg-white hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-cyan-50 lg:hidden"
+      aria-expanded="false"
+      aria-controls="mobile-nav-overlay"
+      aria-label="Open navigation menu"
+      data-menu-toggle
+    >
+      <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path
+          d="M4 7H20M4 12H20M4 17H20"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          data-menu-icon-open
+        ></path>
+        <path
+          d="M6 6L18 18M18 6L6 18"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          class="hidden"
+          data-menu-icon-close
+        ></path>
+      </svg>
+    </button>
+
+    <nav aria-label="Primary navigation" class="hidden lg:block">
+      <ul class="flex items-center gap-2">
+        {
+          navItems.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                class="rounded-md border border-transparent px-3 py-1.5 text-sm font-semibold text-slate-700 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-cyan-300 hover:bg-white/70 hover:text-slate-900 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-cyan-50"
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+
+  <div
+    id="mobile-nav-overlay"
+    class="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex items-center justify-center p-4 opacity-0 transition-opacity duration-200 lg:hidden"
+    aria-hidden="true"
+    style="top: var(--mobile-menu-top, 0px);"
+    data-menu-overlay
+  >
+    <button
+      type="button"
+      class="absolute inset-0 bg-slate-900/35 backdrop-blur-[1px]"
+      aria-label="Close navigation menu"
+      data-menu-backdrop
+    ></button>
+    <div
+      class="relative w-full max-w-xs rounded-xl border border-cyan-200/70 bg-white/80 p-4 shadow-xl backdrop-blur-sm transition duration-200 ease-out data-[open=true]:scale-100 data-[open=true]:opacity-100 data-[open=false]:scale-95 data-[open=false]:opacity-0"
+      data-menu-panel
+      data-open="false"
+    >
+      <nav aria-label="Mobile navigation">
+        <ul class="space-y-2">
+          {
+            navItems.map((item) => (
+              <li>
+                <a
+                  href={item.href}
+                  class="block rounded-md border border-transparent px-3 py-2 text-center text-sm font-semibold text-slate-700 transition-all duration-200 ease-out hover:border-cyan-300 hover:bg-cyan-50/70 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/70"
+                  data-menu-link
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<script>
+  const headerElement = document.querySelector<HTMLElement>("[data-header-root]");
+  const toggleButton = document.querySelector<HTMLButtonElement>("[data-menu-toggle]");
+  const overlay = document.querySelector<HTMLDivElement>("[data-menu-overlay]");
+  const panel = document.querySelector<HTMLDivElement>("[data-menu-panel]");
+  const backdrop = document.querySelector<HTMLButtonElement>("[data-menu-backdrop]");
+  const menuLinks = document.querySelectorAll<HTMLAnchorElement>("[data-menu-link]");
+  const menuIconOpen = document.querySelector<SVGPathElement>("[data-menu-icon-open]");
+  const menuIconClose = document.querySelector<SVGPathElement>("[data-menu-icon-close]");
+
+  if (headerElement && toggleButton && overlay && panel && backdrop && menuIconOpen && menuIconClose) {
+    const updateOverlayTop = () => {
+      const headerBottom = Math.round(headerElement.getBoundingClientRect().bottom);
+      overlay.style.setProperty("--mobile-menu-top", `${Math.max(headerBottom, 0)}px`);
+    };
+
+    const setMenuState = (isOpen: boolean) => {
+      updateOverlayTop();
+      toggleButton.setAttribute("aria-expanded", String(isOpen));
+      toggleButton.setAttribute("aria-label", isOpen ? "Close navigation menu" : "Open navigation menu");
+      overlay.setAttribute("aria-hidden", String(!isOpen));
+      overlay.classList.toggle("pointer-events-none", !isOpen);
+      overlay.classList.toggle("opacity-0", !isOpen);
+      panel.setAttribute("data-open", String(isOpen));
+      menuIconOpen.classList.toggle("hidden", isOpen);
+      menuIconClose.classList.toggle("hidden", !isOpen);
+      document.body.classList.toggle("overflow-hidden", isOpen);
+    };
+
+    setMenuState(false);
+
+    toggleButton.addEventListener("click", () => {
+      const isOpen = toggleButton.getAttribute("aria-expanded") === "true";
+      setMenuState(!isOpen);
+    });
+
+    backdrop.addEventListener("click", () => {
+      setMenuState(false);
+    });
+
+    menuLinks.forEach((link) => {
+      link.addEventListener("click", () => {
+        setMenuState(false);
+      });
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        setMenuState(false);
+      }
+    });
+
+    window.addEventListener("resize", updateOverlayTop);
+    window.addEventListener("scroll", updateOverlayTop, { passive: true });
+  }
+</script>
