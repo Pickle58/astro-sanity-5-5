@@ -22,7 +22,6 @@
     "@types/react-dom": "^19.2.3",
     "astro": "^6.1.6",
     "astro-portabletext": "^0.13.0",
-    "autoprefixer": "^10.4.27",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "groq": "^5.20.0",
@@ -31,8 +30,8 @@
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-is": "^19.2.5",
+    "resend": "^6.12.2",
     "sanity": "^5.20.0",
-    "shadcn": "^4.7.0",
     "styled-components": "^6.4.0",
     "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.2.2",
@@ -44,6 +43,7 @@
     "@tailwindcss/typography": "^0.5.19",
     "prettier": "^3.8.2",
     "prettier-plugin-astro": "^0.14.1",
+    "shadcn": "^4.7.0",
     "typescript": "^5.9.3"
   }
 }

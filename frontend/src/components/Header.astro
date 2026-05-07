@@ -87,6 +87,7 @@ const navItems = [
       class="relative w-full max-w-xs rounded-xl border border-cyan-200/70 bg-white/80 p-4 shadow-xl backdrop-blur-sm transition duration-200 ease-out data-[open=true]:scale-100 data-[open=true]:opacity-100 data-[open=false]:scale-95 data-[open=false]:opacity-0"
       data-menu-panel
       data-open="false"
+      tabindex="-1"
     >
       <nav aria-label="Mobile navigation">
         <ul class="space-y-2">
@@ -125,7 +126,15 @@ const navItems = [
       overlay.style.setProperty("--mobile-menu-top", `${Math.max(headerBottom, 0)}px`);
     };
 
-    const setMenuState = (isOpen: boolean) => {
+    const getFocusable = () =>
+      Array.from(
+        panel.querySelectorAll<HTMLElement>('a[href], button, [tabindex]:not([tabindex="-1"])')
+      );
+
+    const isMenuOpen = () => toggleButton.getAttribute("aria-expanded") === "true";
+
+    const setMenuState = (isOpen: boolean, options: { restoreFocus?: boolean } = {}) => {
+      const { restoreFocus = true } = options;
       updateOverlayTop();
       toggleButton.setAttribute("aria-expanded", String(isOpen));
       toggleButton.setAttribute("aria-label", isOpen ? "Close navigation menu" : "Open navigation menu");
@@ -133,12 +142,20 @@ const navItems = [
       overlay.classList.toggle("pointer-events-none", !isOpen);
       overlay.classList.toggle("opacity-0", !isOpen);
       panel.setAttribute("data-open", String(isOpen));
+      panel.setAttribute("aria-modal", String(isOpen));
       menuIconOpen.classList.toggle("hidden", isOpen);
       menuIconClose.classList.toggle("hidden", !isOpen);
       document.body.classList.toggle("overflow-hidden", isOpen);
+
+      if (isOpen) {
+        const first = getFocusable()[0];
+        (first ?? panel).focus();
+      } else if (restoreFocus) {
+        toggleButton.focus();
+      }
     };
 
-    setMenuState(false);
+    setMenuState(false, { restoreFocus: false });
 
     toggleButton.addEventListener("click", () => {
       const isOpen = toggleButton.getAttribute("aria-expanded") === "true";
@@ -156,8 +173,39 @@ const navItems = [
     });
 
     document.addEventListener("keydown", (event) => {
+      if (!isMenuOpen()) {
+        return;
+      }
+
       if (event.key === "Escape") {
+        event.preventDefault();
         setMenuState(false);
+        return;
+      }
+
+      if (event.key !== "Tab") {
+        return;
+      }
+
+      const focusable = getFocusable();
+      if (!focusable.length) {
+        event.preventDefault();
+        panel.focus();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+
+      if (event.shiftKey) {
+        if (active === first || !active || !panel.contains(active)) {
+          event.preventDefault();
+          last.focus();
+        }
+      } else if (active === last || !active || !panel.contains(active)) {
+        event.preventDefault();
+        first.focus();
       }
     });
 

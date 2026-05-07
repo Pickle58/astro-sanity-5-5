@@ -160,11 +160,6 @@
 
 html {
   min-height: 100%;
-  background-color: var(--page-radial-fallback);
-  background-image: var(--page-radial-gradient);
-  background-attachment: fixed;
-  background-repeat: no-repeat;
-  background-size: cover;
   font-family: var(--font-sans);
   text-size-adjust: 100%;
 }
@@ -176,13 +171,14 @@ body {
   isolation: isolate;
 }
 
-/* Full-viewport grid: two thin yellow line layers, offset + slight rotate (not a harsh spreadsheet grid) */
+/* Full-viewport canvas: radial background + thin yellow grid layers */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: -1;
   pointer-events: none;
+  background-color: var(--page-radial-fallback);
   background-image:
     repeating-linear-gradient(
       0deg,
@@ -197,11 +193,20 @@ body::before {
       transparent calc(var(--page-grid-step) - 1px),
       var(--page-grid-yellow-soft) calc(var(--page-grid-step) - 1px),
       var(--page-grid-yellow-soft) var(--page-grid-step)
-    );
-  background-size: var(--page-grid-step) var(--page-grid-step);
+    ),
+    var(--page-radial-gradient);
+  background-repeat:
+    repeat,
+    repeat,
+    no-repeat;
+  background-size:
+    var(--page-grid-step) var(--page-grid-step),
+    var(--page-grid-step) var(--page-grid-step),
+    cover;
   background-position:
     0 0,
-    13px 21px;
+    13px 21px,
+    center;
   transform: rotate(0.35deg);
   transform-origin: 50% 35%;
 }
