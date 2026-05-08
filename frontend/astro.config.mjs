@@ -6,7 +6,7 @@ const {
   PUBLIC_SANITY_STUDIO_DATASET,
   PUBLIC_SANITY_STUDIO_URL,
 } = loadEnv(import.meta.env.MODE, process.cwd(), "");
-import { defineConfig } from "astro/config";
+import { defineConfig, envField } from "astro/config";
 
 const projectId = PUBLIC_SANITY_STUDIO_PROJECT_ID;
 const dataset = PUBLIC_SANITY_STUDIO_DATASET;
@@ -27,6 +27,22 @@ export default defineConfig({
   // Requires an adapter for deployment (Vercel, Netlify, Cloudflare, Node, etc.)
   output: "server",
   adapter: vercel(),
+  env: {
+    schema: {
+      RESEND_API_KEY: envField.string({
+        context: "server",
+        access: "secret",
+      }),
+      RESEND_FROM_ADDRESS: envField.string({
+        context: "server",
+        access: "secret",
+      }),
+      RESEND_NOTIFY_TO: envField.string({
+        context: "server",
+        access: "secret",
+      }),
+    },
+  },
   integrations: [
     sanity({
       projectId,

@@ -4,6 +4,8 @@
 
 interface ImportMetaEnv {
   readonly RESEND_API_KEY: string;
+  readonly RESEND_FROM_ADDRESS: string;
+  readonly RESEND_NOTIFY_TO: string;
 }
 
 interface ImportMeta {

@@ -1,16 +1,11 @@
+import {
+  RESEND_API_KEY,
+  RESEND_FROM_ADDRESS,
+  RESEND_NOTIFY_TO,
+} from "astro:env/server"
 import { Resend } from "resend"
 
-const apiKey = import.meta.env.RESEND_API_KEY
+export const FROM_ADDRESS = RESEND_FROM_ADDRESS
+export const NOTIFY_TO = RESEND_NOTIFY_TO
 
-if (!apiKey) {
-  console.warn(
-    "[resend] RESEND_API_KEY is not set; contact form sends will fail."
-  )
-}
-
-export const resend = new Resend(apiKey)
-
-export const FROM_ADDRESS =
-  "Pilkington Enterprises <no-reply@elderpickle.com>"
-
-export const NOTIFY_TO = "jpilkington332@gmail.com"
+export const resend = new Resend(RESEND_API_KEY)
