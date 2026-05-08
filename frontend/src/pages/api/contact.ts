@@ -33,13 +33,6 @@ function escapeHtmlMultiline(value: string): string {
   return escapeHtml(value).replace(/\r\n|\r|\n/g, "<br>")
 }
 
-function quotePlainText(value: string): string {
-  return value
-    .split(/\r\n|\r|\n/)
-    .map((line) => `> ${line}`)
-    .join("\n")
-}
-
 export const POST: APIRoute = async ({ request }) => {
   let raw: unknown
   try {
@@ -102,7 +95,6 @@ export const POST: APIRoute = async ({ request }) => {
   const safeLast = escapeHtml(lastName)
   const safeEmail = escapeHtml(email)
   const safeMessageHtml = escapeHtmlMultiline(message)
-  const quotedMessageText = quotePlainText(message)
   const requestId = crypto.randomUUID()
 
   const notificationText = `New contact form submission
@@ -143,37 +135,10 @@ ${message}`
     )
   }
 
-  const autoReplyText = `Hi ${firstName},
-
-Thanks for reaching out. We received your message and will get back to you shortly at ${email}.
-
-Your message:
-${quotedMessageText}
-
-— Pilkington Enterprises`
-
-  const autoReplyHtml = `<p>Hi ${safeFirst},</p>
-<p>Thanks for reaching out. We received your message and will get back to you shortly at <a href="mailto:${safeEmail}">${safeEmail}</a>.</p>
-<p><strong>Your message:</strong></p>
-<blockquote style="margin:0 0 0 1em;padding-left:1em;border-left:3px solid #ccc;color:#555;">${safeMessageHtml}</blockquote>
-<p>&mdash; Pilkington Enterprises</p>`
-
-  const autoReply = await resend.emails.send(
-    {
-      from: FROM_ADDRESS,
-      to: [email],
-      subject: "We received your message",
-      text: autoReplyText,
-      html: autoReplyHtml,
-      tags: [{ name: "category", value: "contact-autoreply" }],
-    },
-    { idempotencyKey: `contact-autoreply/${requestId}` }
-  )
-
-  if (autoReply.error) {
-    // Primary notification already sent; log and continue.
-    console.error("[contact] auto-reply send failed", autoReply.error)
-  }
+  // Auto-reply is intentionally disabled: this endpoint is public, so sending
+  // mail from a verified domain to a caller-supplied address would let anyone
+  // use it as an outbound mailer. Re-enable only with CAPTCHA verification,
+  // per-IP rate limiting, and email-ownership confirmation in place.
 
   return jsonResponse({ ok: true }, 200)
 }

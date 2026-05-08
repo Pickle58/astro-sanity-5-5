@@ -33,6 +33,13 @@ export function ContactForm() {
 
   const isSubmitting = status === "submitting"
 
+  function clearStaleStatus() {
+    if (status === "success" || status === "error") {
+      setStatus("idle")
+      setErrorMessage(null)
+    }
+  }
+
   async function handleSubmit(event: React.SyntheticEvent<HTMLFormElement>) {
     event.preventDefault()
     if (isSubmitting) return
@@ -92,7 +99,10 @@ export function ContactForm() {
                 type="text"
                 autoComplete="given-name"
                 value={firstName}
-                onChange={(event) => setFirstName(event.target.value)}
+                onChange={(event) => {
+                  clearStaleStatus()
+                  setFirstName(event.target.value)
+                }}
                 required
                 disabled={isSubmitting}
               />
@@ -105,7 +115,10 @@ export function ContactForm() {
                 type="text"
                 autoComplete="family-name"
                 value={lastName}
-                onChange={(event) => setLastName(event.target.value)}
+                onChange={(event) => {
+                  clearStaleStatus()
+                  setLastName(event.target.value)
+                }}
                 required
                 disabled={isSubmitting}
               />
@@ -120,7 +133,10 @@ export function ContactForm() {
               autoComplete="email"
               inputMode="email"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) => {
+                clearStaleStatus()
+                setEmail(event.target.value)
+              }}
               required
               disabled={isSubmitting}
             />
@@ -133,7 +149,10 @@ export function ContactForm() {
               rows={5}
               maxLength={MESSAGE_MAX_LENGTH}
               value={message}
-              onChange={(event) => setMessage(event.target.value)}
+              onChange={(event) => {
+                clearStaleStatus()
+                setMessage(event.target.value)
+              }}
               required
               disabled={isSubmitting}
             />
@@ -160,8 +179,8 @@ export function ContactForm() {
 
           {status === "success" && (
             <p role="status" className="text-sm text-muted-foreground">
-              Thanks &mdash; your message was sent. Check your inbox for a
-              confirmation.
+              Thanks &mdash; your message was sent. We will reply to the email
+              you provided.
             </p>
           )}
           {status === "error" && errorMessage && (
