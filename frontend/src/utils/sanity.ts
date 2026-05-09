@@ -28,6 +28,29 @@ const imageProjection = `{
   "lqip": asset->metadata.lqip,
 }`;
 
+const approvedCommentProjection = `{
+  _id,
+  _type,
+  _createdAt,
+  authorId,
+  authorName,
+  body,
+  status,
+  createdAt
+}`;
+
+const approvedCommentsByPostIdQuery = groq`*[
+  _type == "comment" &&
+  status == "approved" &&
+  post._ref == $postId
+] | order(createdAt asc) ${approvedCommentProjection}`;
+
+const approvedCommentsByPostSlugQuery = groq`*[
+  _type == "comment" &&
+  status == "approved" &&
+  post->slug.current == $slug
+] | order(createdAt asc) ${approvedCommentProjection}`;
+
 export async function getPosts(): Promise<Post[]> {
   return loadQuery<Post[]>(
     groq`*[_type == "post" && defined(slug.current)] | order(_createdAt desc) {
@@ -49,6 +72,14 @@ export async function getPost(slug: string): Promise<Post> {
     }`,
     { slug },
   );
+}
+
+export async function getApprovedCommentsByPostId(postId: string): Promise<Comment[]> {
+  return loadQuery<Comment[]>(approvedCommentsByPostIdQuery, { postId });
+}
+
+export async function getApprovedCommentsByPostSlug(slug: string): Promise<Comment[]> {
+  return loadQuery<Comment[]>(approvedCommentsByPostSlugQuery, { slug });
 }
 
 export interface SanityImage {
@@ -81,4 +112,15 @@ export interface Post {
   mainImage?: SanityImage;
   body: PortableTextBlock[];
   seo?: Seo;
+}
+
+export interface Comment {
+  _id: string;
+  _type: "comment";
+  _createdAt: string;
+  authorId: string;
+  authorName: string;
+  body: string;
+  status: "approved";
+  createdAt: string;
 }
