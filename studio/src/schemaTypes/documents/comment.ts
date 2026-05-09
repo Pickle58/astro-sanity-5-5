@@ -65,6 +65,7 @@ export default defineType({
       name: 'createdAt',
       title: 'Submitted at',
       type: 'datetime',
+      readOnly: true,
       initialValue: () => new Date().toISOString(),
       validation: (Rule) => Rule.required(),
     }),

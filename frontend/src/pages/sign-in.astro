@@ -1,0 +1,16 @@
+---
+import {AuthenticateWithRedirectCallback, SignIn} from "@clerk/astro/components";
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Sign in — Pilkington Enterprises" description="Sign in to your account.">
+  <AuthenticateWithRedirectCallback
+    signInUrl="/sign-in"
+    signUpUrl="/sign-up"
+    signInFallbackRedirectUrl="/"
+    signUpFallbackRedirectUrl="/"
+  />
+  <div class="flex min-h-[55vh] w-full items-center justify-center px-3 py-10">
+    <SignIn />
+  </div>
+</Layout>

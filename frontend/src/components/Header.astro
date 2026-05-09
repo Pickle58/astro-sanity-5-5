@@ -1,4 +1,6 @@
 ---
+import {Show, SignInButton, SignUpButton, UserButton} from "@clerk/astro/components";
+
 const navItems = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about" },
@@ -52,22 +54,49 @@ const navItems = [
       </svg>
     </button>
 
-    <nav aria-label="Primary navigation" class="hidden lg:block">
-      <ul class="flex items-center gap-2">
-        {
-          navItems.map((item) => (
-            <li>
-              <a
-                href={item.href}
-                class="rounded-md border border-transparent px-3 py-1.5 text-sm font-semibold text-slate-700 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-cyan-300 hover:bg-white/70 hover:text-slate-900 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-cyan-50"
-              >
-                {item.label}
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-    </nav>
+    <div class="hidden items-center gap-3 lg:flex">
+      <nav aria-label="Primary navigation">
+        <ul class="flex items-center gap-2">
+          {
+            navItems.map((item) => (
+              <li>
+                <a
+                  href={item.href}
+                  class="rounded-md border border-transparent px-3 py-1.5 text-sm font-semibold text-slate-700 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-cyan-300 hover:bg-white/70 hover:text-slate-900 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/70 focus-visible:ring-offset-2 focus-visible:ring-offset-cyan-50"
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <Show when="signed-out">
+        <div class="flex items-center gap-2">
+          <SignInButton mode="modal" asChild>
+            <button
+              type="button"
+              class="rounded-md border border-cyan-300 bg-white/85 px-3 py-1.5 text-sm font-semibold text-slate-800 transition hover:bg-white"
+            >
+              Sign in
+            </button>
+          </SignInButton>
+          <SignUpButton mode="modal" asChild>
+            <button
+              type="button"
+              class="rounded-md bg-black px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-black/90"
+            >
+              Sign up
+            </button>
+          </SignUpButton>
+        </div>
+      </Show>
+      <Show when="signed-in">
+        <UserButton />
+      </Show>
+    </div>
+
   </div>
 
   <div
@@ -105,6 +134,30 @@ const navItems = [
             ))
           }
         </ul>
+        <div class="mt-4 border-t border-cyan-200/80 pt-3 text-center">
+          <Show when="signed-out">
+            <div class="flex items-center justify-center gap-2">
+              <SignInButton mode="modal" asChild>
+                <button
+                  type="button"
+                  class="rounded-md border border-cyan-300 bg-white/85 px-3 py-1.5 text-sm font-semibold text-slate-800"
+                >
+                  Sign in
+                </button>
+              </SignInButton>
+              <SignUpButton mode="modal" asChild>
+                <button type="button" class="rounded-md bg-black px-3 py-1.5 text-sm font-semibold text-white">
+                  Sign up
+                </button>
+              </SignUpButton>
+            </div>
+          </Show>
+          <Show when="signed-in">
+            <div class="flex items-center justify-center">
+              <UserButton />
+            </div>
+          </Show>
+        </div>
       </nav>
     </div>
   </div>
