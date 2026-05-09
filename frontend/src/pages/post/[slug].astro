@@ -5,7 +5,7 @@ import CodeBlock from "../../components/CodeBlock.astro";
 import Layout from "../../layouts/Layout.astro";
 import { formatDate } from "../../utils";
 import { urlFor, buildSrcSet } from "../../utils/image";
-import { getPost } from "../../utils/sanity";
+import { getApprovedCommentsByPostId, getPost } from "../../utils/sanity";
 
 const { slug } = Astro.params;
 const post = await getPost(slug!);
@@ -13,6 +13,7 @@ const post = await getPost(slug!);
 if (!post) {
   return Astro.rewrite('/404');
 }
+const comments = await getApprovedCommentsByPostId(post._id);
 
 const visualEditingEnabled =
   import.meta.env.PUBLIC_SANITY_VISUAL_EDITING_ENABLED === "true";
@@ -70,6 +71,176 @@ const ogImage = ogImageSource
       <div class="prose prose-lg prose-serif mt-13 md:mt-21 max-w-none prose-blockquote:border-l-[5px] prose-blockquote:border-black prose-blockquote:pl-3 prose-blockquote:ml-5 prose-a:text-blue-600 prose-a:no-underline" data-sanity={dataAttr?.scope("body").toString()}>
         <PortableText value={post.body} components={{ type: { code: CodeBlock } }} />
       </div>
+      <section class="mt-16 border-t border-black/20 pt-8">
+        <h2 class="font-sans text-2xl font-bold">Comments</h2>
+        <p id="comments-count" class="mt-1 text-sm text-black/70">
+          {comments.length} {comments.length === 1 ? "comment" : "comments"}
+        </p>
+
+        <div id="comments-list" class="mt-6 space-y-5">
+          {comments.length ? (
+            comments.map((comment) => (
+              <article class="rounded-lg border border-black/20 bg-white/70 p-4">
+                <div class="flex items-center justify-between gap-3">
+                  <p class="font-sans text-sm font-semibold">{comment.authorName}</p>
+                  <p class="text-xs text-black/70">{formatDate(comment.createdAt)}</p>
+                </div>
+                <p class="mt-2 whitespace-pre-wrap text-sm leading-6 text-black/90">{comment.body}</p>
+              </article>
+            ))
+          ) : (
+            <p id="comments-empty" class="text-sm text-black/70">No approved comments yet.</p>
+          )}
+        </div>
+
+        <div class="mt-10 rounded-lg border border-black/20 bg-white/80 p-5">
+          <h3 class="font-sans text-xl font-bold">Leave a comment</h3>
+          <p class="mt-1 text-sm text-black/70">
+            You must be signed in. Some comments may be held for moderation.
+          </p>
+
+          <form id="comment-form" class="mt-5 space-y-3">
+            <input type="hidden" name="postId" value={post._id} />
+            <div class="hidden" aria-hidden="true">
+              <label for="website">Website</label>
+              <input id="website" name="website" type="text" autocomplete="off" tabindex="-1" />
+            </div>
+            <label class="block text-sm font-medium" for="comment-body">Comment</label>
+            <textarea
+              id="comment-body"
+              name="body"
+              class="min-h-28 w-full rounded-md border border-black/30 bg-white px-3 py-2 text-sm"
+              maxlength="2000"
+              required
+            ></textarea>
+            <button
+              id="comment-submit"
+              type="submit"
+              class="rounded-md bg-black px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+            >
+              Submit comment
+            </button>
+            <p id="comment-status" class="text-sm" aria-live="polite"></p>
+          </form>
+        </div>
+      </section>
     </div>
   </section>
+  <script is:inline>
+    const form = document.getElementById("comment-form");
+    const statusEl = document.getElementById("comment-status");
+    const submitButton = document.getElementById("comment-submit");
+    const commentsList = document.getElementById("comments-list");
+    const commentsCount = document.getElementById("comments-count");
+    const commentsEmpty = document.getElementById("comments-empty");
+
+    function updateCommentsCount() {
+      if (!commentsCount || !commentsList) return;
+      const total = commentsList.querySelectorAll("article").length;
+      commentsCount.textContent = `${total} ${total === 1 ? "comment" : "comments"}`;
+    }
+
+    function addApprovedComment(comment) {
+      if (!commentsList || !comment || typeof comment !== "object") return;
+
+      const authorName = typeof comment.authorName === "string" ? comment.authorName : "Unknown author";
+      const bodyText = typeof comment.body === "string" ? comment.body : "";
+      const createdAtRaw = typeof comment.createdAt === "string" ? comment.createdAt : "";
+      const createdAtText = createdAtRaw
+        ? new Date(createdAtRaw).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+        : "";
+
+      const article = document.createElement("article");
+      article.className = "rounded-lg border border-black/20 bg-white/70 p-4";
+
+      const header = document.createElement("div");
+      header.className = "flex items-center justify-between gap-3";
+
+      const author = document.createElement("p");
+      author.className = "font-sans text-sm font-semibold";
+      author.textContent = authorName;
+
+      const date = document.createElement("p");
+      date.className = "text-xs text-black/70";
+      date.textContent = createdAtText;
+
+      const body = document.createElement("p");
+      body.className = "mt-2 whitespace-pre-wrap text-sm leading-6 text-black/90";
+      body.textContent = bodyText;
+
+      header.append(author, date);
+      article.append(header, body);
+      commentsList.prepend(article);
+
+      if (commentsEmpty) {
+        commentsEmpty.remove();
+      }
+
+      updateCommentsCount();
+    }
+
+    form?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!(form instanceof HTMLFormElement) || !statusEl || !submitButton) return;
+
+      const formData = new FormData(form);
+      const body = String(formData.get("body") ?? "").trim();
+      const postId = String(formData.get("postId") ?? "").trim();
+      const website = String(formData.get("website") ?? "");
+
+      if (!body) {
+        statusEl.textContent = "Comment is required.";
+        return;
+      }
+
+      submitButton.setAttribute("disabled", "true");
+      statusEl.textContent = "Submitting...";
+
+      try {
+        /** Session JWT when cookies are not sent (e.g. host mismatch); Clerk sets window.Clerk after load. */
+        let authHeader = {};
+        const Clerk = window.Clerk;
+        if (Clerk?.session) {
+          try {
+            const token = await Clerk.session.getToken();
+            if (typeof token === "string" && token.length > 0) {
+              authHeader = { Authorization: `Bearer ${token}` };
+            }
+          } catch {
+            /* keep cookie-only request */
+          }
+        }
+
+        const response = await fetch("/api/comments", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json", ...authHeader },
+          body: JSON.stringify({ postId, body, website }),
+        });
+
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          statusEl.textContent =
+            typeof result?.message === "string"
+              ? result.message
+              : "Could not submit comment. Please try again.";
+          return;
+        }
+
+        const moderationStatus = typeof result?.status === "string" ? result.status : "";
+        statusEl.textContent =
+          moderationStatus === "approved"
+            ? "Comment published."
+            : "Comment submitted and pending moderation.";
+        if (moderationStatus === "approved" && result?.comment) {
+          addApprovedComment(result.comment);
+        }
+        form.reset();
+      } catch {
+        statusEl.textContent = "Could not submit comment. Please try again.";
+      } finally {
+        submitButton.removeAttribute("disabled");
+      }
+    });
+  </script>
 </Layout>
